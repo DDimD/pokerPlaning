@@ -125,7 +125,7 @@ func (srv *Server) Listen() {
 				srv.addNewVote(vote)
 			}
 			//TODO: Добавить сообщение, что голосование закончено
-		case calculateAndSendResult := <-srv.voteResultMessage:
+		case <-srv.voteResultMessage:
 			srv.calculateResult()
 			srv.sendVoteResultToAll()
 		}

@@ -21,7 +21,7 @@ type Client struct {
 	webSocket *websocket.Conn
 	server    *Server
 	// buffered channel to send messages to the client
-	send chan *OutputMessage
+	send chan *VoteResultMessage
 }
 
 //NewClient create new client
@@ -38,13 +38,14 @@ func NewClient(clientName string, role Role, webSocket *websocket.Conn, server *
 		role,
 		webSocket,
 		server,
-		make(chan *OutputMessage, 25)}
+		make(chan *VoteResultMessage),
+	}
 }
 
 //Listen function to listen for incoming and outgoing messages
 func (cl *Client) Listen() {
-	go cl.readMessage()
-	cl.writeMessage()
+	go cl.readCommand()
+	cl.sendResults()
 }
 
 //readMessage listen, sign and send an incoming message
@@ -57,7 +58,7 @@ func (cl *Client) readCommand() {
 
 	for {
 		var cmd InputCommand
-		if nil == cl.readJSON(&cmd) {
+		if nil != cl.readJSON(&cmd) {
 			break
 		}
 
@@ -66,7 +67,7 @@ func (cl *Client) readCommand() {
 			if cl.role == ProjectManager {
 				var startData StartVoteData
 
-				if nil == cl.readJSON(&startData) {
+				if nil != cl.readJSON(&startData) {
 					break
 				}
 
@@ -90,8 +91,8 @@ func (cl *Client) readCommand() {
 
 			cl.server.vote <- &outVote
 		default:
+			//TODO: sendError
 		}
-
 	}
 }
 
@@ -117,12 +118,12 @@ func (cl *Client) readJSON(val interface{}) error {
 	return err
 }
 
-// writeMessage send message to client
-func (cl *Client) writeMessage() {
+// sendResults send message to client
+func (cl *Client) sendResults() {
 	for {
-		msg := <-cl.send
+		res := <-cl.send
 
-		err := cl.webSocket.WriteJSON(msg)
+		err := cl.webSocket.WriteJSON(res)
 		if err != nil {
 			log.Printf("client %s %v", cl.name, err)
 			break
