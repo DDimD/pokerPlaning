@@ -22,7 +22,7 @@
     </nav>
     <div class="container mt-2">
         <!-- Modal -->
-        <!-- <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
             aria-hidden="true" data-backdrop="static">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
@@ -62,15 +62,15 @@
                     </div>
                 </div>
             </div>
-        </div> -->
+        </div>
         <!-- Блок с картами -->
         <div class="row mt-4">
             <div class="col-lg-9 col-12">
                 <div class="row">
                     {{range .Cards}}
                     <div class="col-6 col-sm-4 col-md-3 col-lg-2 pb-3">
-                        <button class="p-0 voteCard card justify-content-around" value="{{.Value}}"
-                            data-question="{{.IsQuestion}}" data-coffee="{{.IsCoffee}}">
+                        <button type="button" class="btn p-0 voteCard card justify-content-around" value="{{.Value}}"
+                            data-question="{{.IsQuestion}}" data-coffee="{{.IsCoffee}}" data-toggle="button" aria-pressed="false" autocomplete="off">
                             <div class="d-flex mb-auto bd-highlight">
                                 {{if .IsCoffee}}
                                 <span class="fa fa-coffee mr-auto mr-auto ml-1 mt-1">
@@ -128,6 +128,7 @@
                 </div>
                 <div class="row mt-4 justify-content-center">
                     <div class="col-auto">
+                        <input class="text form-control" id="topicName">
                         <button class="btn btn-outline-success" id="startVote">
                             Старт голосования
                         </button>
@@ -144,23 +145,17 @@
                                         <th><span>Участники</span></th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
+                                <tbody id="userList">
+                                    {{range .Users}}
+                                    <tr id="user_{{.Name}}">
                                         <td>
                                             <img class="avatar  rounded-circle" src="48-512.png" alt="">
-                                            <span>full name</span>
+                                            <span>{{.Name}}</span>
                                             <br>
-                                            <span class="user-subhead" class="role">Developer</span>
+                                            <span class="user-subhead" class="role">{{.Role}}</span>
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td>
-                                            <img class="avatar rounded-circle" src="48-512.png" alt="">
-                                            <span>full name</span>
-                                            <br>
-                                            <span class="user-subhead" class="role">Developer</span>
-                                        </td>
-                                    </tr>
+                                    {{end}}
                                 </tbody>
                             </table>
                         </div>
@@ -168,43 +163,36 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="row">
-        <div class="col-9">
-            <div class="card " id="voteResultBlock">
-                <div class="card-header">
-                    <h4>
-                        Голосование окончено
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <div id='avg'>
-                        <h4 class="card-title">Результат</h4>
-                        <p class="card-text">Трудозатрат в днях: 5.8</p>
+        <div class="row">
+            <div class="col-9">
+                <div class="card" id="voteResultBlock">
+                    <div class="card-header">
+                        <h4>
+                            Голосование окончено
+                        </h4>
                     </div>
+                    <div class="card-body">
+                        <div id='avg'>
+                            <h4 class="card-title">Результат</h4>
+                            <p class="card-text" id="voteResult">Трудозатрат в днях: 5.8</p>
+                        </div>
+                    </div>
+                    <table class="mt-2 mb-0 table table-striped table-dark userVotes">
+                        <thead>
+                            <tr>
+                                <th><span>Участник</span></th>
+                                <th><span>Голос</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="userVotesList">
+                        </tbody>
+                    </table>
                 </div>
-                <table class="mt-2 mb-0 table table-striped table-dark userVotes">
-                    <thead>
-                        <tr>
-                            <th><span>Участник</span></th>
-                            <th><span>Голос</span></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <img class="avatar  rounded-circle" src="48-512.png" alt="">
-                                <span>full name</span>
-                            </td>
-                            <td>5</td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
-    <!-- Конец блока с картами -->
+
+    
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
         </script>

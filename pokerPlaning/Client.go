@@ -1,6 +1,8 @@
 package pokerplan
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/gorilla/websocket"
@@ -21,7 +23,9 @@ type Client struct {
 	webSocket *websocket.Conn
 	server    *Server
 	// buffered channel to send messages to the client
-	send chan *VoteResultMessage
+	send             chan *VoteResultMessage
+	clientConnect    chan *ConnectClientMessage
+	clientDisconnect chan *DisconectClientMessage
 }
 
 //NewClient create new client
@@ -39,6 +43,8 @@ func NewClient(clientName string, role Role, webSocket *websocket.Conn, server *
 		webSocket,
 		server,
 		make(chan *VoteResultMessage),
+		make(chan *ConnectClientMessage),
+		make(chan *DisconectClientMessage),
 	}
 }
 
@@ -67,7 +73,7 @@ func (cl *Client) readCommand() {
 			if cl.Role == ProjectManager {
 				var startData StartVoteData
 
-				if nil != cl.readJSON(&startData) {
+				if nil != json.Unmarshal([]byte(cmd.Message), &startData) {
 					break
 				}
 
@@ -81,7 +87,9 @@ func (cl *Client) readCommand() {
 			}
 
 			var vote Vote
-			if nil == cl.readJSON(&vote) {
+			err := json.Unmarshal([]byte(cmd.Message), &vote)
+			if err != nil {
+				fmt.Println(err)
 				break
 			}
 
@@ -121,12 +129,20 @@ func (cl *Client) readJSON(val interface{}) error {
 // sendResults send message to client
 func (cl *Client) sendResults() {
 	for {
-		res := <-cl.send
+		select {
 
-		err := cl.webSocket.WriteJSON(res)
-		if err != nil {
-			log.Printf("client %s %v", cl.Name, err)
-			break
+		case res := <-cl.send:
+
+			err := cl.webSocket.WriteJSON(res)
+			if err != nil {
+				log.Printf("client %s %v", cl.Name, err)
+				break
+			}
+
+		case newClient := <-cl.clientConnect:
+			cl.webSocket.WriteJSON(newClient)
+		case disconnectClient := <-cl.clientDisconnect:
+			cl.webSocket.WriteJSON(disconnectClient)
 		}
 	}
 }

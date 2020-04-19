@@ -60,6 +60,11 @@ body {
 
 .voteCard:focus {
     box-shadow: 0 0 0 3px #375a7f;
+    outline-width: 0;
+}
+
+.voteCard:active, .voteCard.active {
+    background-color: #375a7f;
 }
 
 .voteCard .number {

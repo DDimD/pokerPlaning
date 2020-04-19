@@ -11,7 +11,7 @@ type card struct {
 }
 
 type ViewData struct {
-	Users []pokerplan.Client
+	Users []pokerplan.User
 	Cards []card
 	Topic string
 }

@@ -1,5 +1,7 @@
 package pokerplan
 
+import "encoding/json"
+
 // Message struct for sending message to clients
 type OutputMessage struct {
 	UserName string `json:"userName"`
@@ -7,11 +9,27 @@ type OutputMessage struct {
 }
 
 type InputCommand struct {
-	Command string `json:"command"`
+	Command string          `json:"command"`
+	Message json.RawMessage `json:"body"`
 }
 
 type StartVoteData struct {
 	TopicName string `json:"topic"`
+}
+type User struct {
+	Name string
+	Role string
+}
+
+type ConnectClientMessage struct {
+	Command  string
+	UserName string
+	Role     string
+}
+
+type DisconectClientMessage struct {
+	Command  string
+	UserName string
 }
 
 type VoteResultMessage struct {

@@ -19,7 +19,6 @@ type Server struct {
 	startVote         chan StartVoteData
 	addClient         chan *Client
 	removeClient      chan *Client
-	PMClient          *Client
 	clients           map[string]*Client
 	rwMutex           sync.RWMutex
 	voteList          map[string]*OutputVote
@@ -32,12 +31,11 @@ type Server struct {
 func NewServer(pattern string) *Server {
 	return &Server{
 		pattern,
-		make(chan *OutputVote),
-		make(chan bool),
+		make(chan *OutputVote, 20),
+		make(chan bool, 5),
 		make(chan StartVoteData),
-		make(chan *Client),
-		make(chan *Client),
-		nil,
+		make(chan *Client, 10),
+		make(chan *Client, 10),
 		make(map[string]*Client),
 		sync.RWMutex{},
 		make(map[string]*OutputVote),
@@ -100,20 +98,14 @@ func (srv *Server) Listen() {
 	for {
 		select {
 		case client := <-srv.addClient:
-			if client.Role == ProjectManager {
-				srv.PMClient = client
-			} else {
-				srv.clients[client.Name] = client
-			}
+			srv.clients[client.Name] = client
 			log.Printf("user %s connected", client.Name)
+			srv.connectClient(client)
 
 		case client := <-srv.removeClient:
-			if client.Role == ProjectManager {
-				srv.PMClient = nil
-			} else {
-				delete(srv.clients, client.Name)
-			}
+			delete(srv.clients, client.Name)
 			log.Printf("client %s removed", client.Name)
+			srv.disconnectClient(client)
 
 		case data := <-srv.startVote:
 			if srv.voteStoped {
@@ -125,7 +117,8 @@ func (srv *Server) Listen() {
 				srv.addNewVote(vote)
 			}
 			//TODO: Добавить сообщение, что голосование закончено
-		case <-srv.voteResultMessage:
+		case tr := <-srv.voteResultMessage:
+			fmt.Println(tr)
 			srv.calculateResult()
 			srv.sendVoteResultToAll()
 		}
@@ -140,20 +133,53 @@ func (srv *Server) start(data StartVoteData) {
 
 func (srv *Server) addNewVote(vote *OutputVote) {
 	srv.voteList[vote.UserName] = vote
-	if len(srv.voteList) >= len(srv.clients) {
+	if len(srv.voteList) >= srv.lenDevClients() {
 		srv.voteResultMessage <- true
 	}
 }
 
+func (srv *Server) lenDevClients() int {
+	cnt := 0
+	for _, cl := range srv.clients {
+		if cl.Role != ProjectManager {
+			cnt++
+		}
+	}
+	return cnt
+}
+
+func (srv *Server) connectClient(newClient *Client) {
+	for _, client := range srv.clients {
+		client.clientConnect <- &ConnectClientMessage{
+			"connect",
+			newClient.Name,
+			getRoleDescription(newClient.Role),
+		}
+	}
+}
+
+func (srv *Server) disconnectClient(rmClient *Client) {
+	for _, client := range srv.clients {
+		client.clientDisconnect <- &DisconectClientMessage{
+			"disconnect",
+			rmClient.Name,
+		}
+	}
+}
+
 func (srv *Server) calculateResult() {
-	var sum float64
+	var sum float64 = 0.
+	var cnt float64 = 0.
+
 	for _, vote := range srv.voteList {
 		if vote.Vote.IsCoffeeBreak || vote.Vote.IsQuestionMark {
 			continue
 		}
 		sum += vote.Vote.Value
+		cnt++
 	}
-	srv.voteResult = sum / (float64)(len(srv.clients))
+	srv.voteResult = sum / cnt
+	fmt.Println(cnt)
 }
 
 func (srv *Server) sendVoteResultToAll() {
@@ -202,19 +228,31 @@ func (srv *Server) userExist(username string) bool {
 }
 
 //GetClients return all clients in array
-func (srv *Server) GetClients() []Client {
-	clients := make([]Client, 0, len(srv.clients)+1)
+func (srv *Server) GetClients() []User {
+	users := make([]User, 0, len(srv.clients))
 	for _, val := range srv.clients {
-		clients = append(clients, *val)
+		users = append(users, User{
+			val.Name,
+			getRoleDescription(val.Role),
+		})
 	}
-
-	if srv.PMClient != nil {
-		clients = append(clients, *srv.PMClient)
-	}
-	return clients
+	return users
 }
 
 //GetTopicName returns current topic name
 func (srv *Server) GetTopicName() string {
 	return srv.currentTopicName
+}
+
+func getRoleDescription(role Role) string {
+	switch role {
+	case 1:
+		return "PM"
+	case 2:
+		return "Developer"
+	case 3:
+		return "QA"
+	default:
+		return "XZ"
+	}
 }

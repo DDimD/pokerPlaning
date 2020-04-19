@@ -5,9 +5,9 @@ window.onload = function () {
 }
 
 $('#autorization').on('click', function () {
-    var username = $('#username').val()
-
-    var xmlHttpRequest = new XMLHttpRequest();
+    let username = $('#username').val()
+    let role = $('#role').val()
+    let xmlHttpRequest = new XMLHttpRequest();
 
     xmlHttpRequest.open('POST', 'checkUserName', false);
     xmlHttpRequest.send(username);
@@ -17,7 +17,7 @@ $('#autorization').on('click', function () {
         return
     }
 
-    websock = new WebSocket("ws://" + window.location.host + "/websocket?username=" + username)
+    websock = new WebSocket("ws://" + window.location.host + "/websocket?username=" + username + '&role=' + role)
 
     websock.onopen = function () {
         $('#exampleModalCenter').modal('hide') //hide autorize window
@@ -38,20 +38,64 @@ $('#autorization').on('click', function () {
 
     websock.onmessage = function (event) {
         var message = JSON.parse(event.data)
+        if (message.hasOwnProperty('voteResult')) {
+            showResults(message);
+        }
 
-        var inputMessage = "<div class=\"d-flex justify-content-start mb-4\"\>\
-        <div class=\"userMsg\">" +
-            message.userName + ": " +
-            "</div>\
-        <div class=\"msgContainer\">" +
-            message.messageBody +
-            "\</div\>\
-    </div>"
-        $('#chatBox').append(inputMessage).scrollTop($('#chatBox').prop('scrollHeight'));
-        log = $('#chatBox')
-
+        if (message.Command === 'connect') {
+            addUser(message);   
+        }
+        if (message.Command === 'disconnect') {
+            removeUser(message);    
+        }
     }
 })
+
+function addUser(user){
+  let element = '<img class="avatar  rounded-circle" src="48-512.png" alt="">\
+        <span>'+user.UserName+'</span>\
+        <br>\
+        <span class="user-subhead" class="role">'+user.Role+'</span>'
+
+let tableRef = document.getElementById('userList');
+let newRow = tableRef.insertRow(-1);
+newRow.id = 'user_' + user.UserName
+let UserCell = newRow.insertCell(0);
+UserCell.innerHTML = element
+}
+
+function removeUser(user){
+    var elem = $('#user_'+user.UserName);
+    elem.remove();
+}
+
+function showResults(message) {
+    $('#voteResult').html('Итогоговая оценка в днях: ' + message.voteResult);
+    users = new Map(Object.entries(message.votes))
+    users.forEach(element => {
+        let tableRef = document.getElementById('userVotesList');
+        // Insert a row in the table at row index 0
+        let newRow = tableRef.insertRow(0);
+
+        // Insert a cell in the row at index 0
+        let UserNameCell = newRow.insertCell(0);
+        let voteCell = newRow.insertCell(1);
+
+        // Append a text node to the cell
+        let newText = document.createTextNode(element.userName);
+        UserNameCell.appendChild(newText);
+        if (element.vote.isCoffeeBreak) {
+            voteCell.innerHTML = '<span class="fa fa-coffee"></span>'
+        } else if (element.vote.isQuestionMark) {
+            voteCell.innerHTML = '<span class="fa fa-question"></span>'
+        } else {
+            let newText = document.createTextNode(element.vote.value);
+            voteCell.appendChild(newText);
+        }
+
+    });
+    $('#voteResultBlock').show()
+}
 
 function messagesHandler() {
     if (this.readyState != 4)
@@ -77,32 +121,34 @@ function sendMessage() {
 
 }
 
-$('#messageWriter').keypress(function (event) {
+$('#startVote').keypress(function (event) {
     if (event.which == 13) {
-        $('#sendMessage').click()
+        $('#startVote').click()
         event.preventDefault();
         return true
     }
 })
 
-$('#sendMessage').on('click', function () {
-    var message = $('#messageWriter').val()
-    $('#messageWriter').val("")
-
-    var inputMessage = "<div class=\"d-flex justify-content-end mb-4\"\>\
-        <div class=\"msgContainer\">" +
-        message +
-        "\</div\>\
-    </div>"
-    $('#chatBox').append(inputMessage)
-    scrollDown($('#chatBox'))
-    var output = {}
-    output.messageBody = message
+$('#startVote').on('click', function () {
+    let output = {}
+    output.command = 'startVote'
+    let body = {}
+    body.topic = $('#topicName').val()
+    output.body = body
+    $('#voteResultBlock').hide()
     websock.send(JSON.stringify(output))
-
-    $('#messageWriter').focus()
 })
 
-function scrollDown(element) {
-    element.scrollTop($('#chatBox').prop('scrollHeight'));
-}
+$('.voteCard').on('click', function () {
+    $('.voteCard').not(this).removeClass('active')
+
+    let output = {}
+    output.command = 'vote'
+    output.body = {
+        value: parseFloat($(this).val()),
+        isCoffeeBreak: $(this).data('coffee'),
+        isQuestionMark: $(this).data('question')
+    }
+
+    websock.send(JSON.stringify(output))
+})
