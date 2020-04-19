@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/DDimD/chatServer/chat"
+	pokerplan "github.com/DDimD/pokerPlaning/pokerPlaning"
 )
 
 func main() {
@@ -12,7 +12,7 @@ func main() {
 	fileSys := http.FileServer(http.Dir("./index/"))
 	http.Handle("/", fileSys)
 
-	server := chat.NewServer("/websocket")
+	server := pokerplan.NewServer("/websocket")
 	go server.Listen()
 
 	log.Fatal(http.ListenAndServe(":25555", nil))

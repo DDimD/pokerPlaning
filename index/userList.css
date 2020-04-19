@@ -1,6 +1,7 @@
 .main-box.no-header {
     padding-top: 20px;
 }
+
 .main-box {
     background: #444;
     -webkit-box-shadow: 1px 1px 2px 0 #888;
@@ -19,10 +20,16 @@
     font-size: 0.875em;
     font-weight: 600;
 }
+
+.user-list {
+    color: #aaa;
+}
+
 .user-list tbody td .user-subhead {
     font-size: 0.875em;
     font-style: italic;
 }
+
 .user-list tbody td .user-link {
     display: block;
     font-size: 1.25em;
@@ -37,22 +44,24 @@
     margin-right: 15px;
 }
 
-.table thead tr th {
+.user-list thead tr th {
     border-color: #6d8191;
     text-transform: uppercase;
     font-size: 0.875em;
 }
-.table thead tr th {
+
+.user-list thead tr th {
     border-bottom: 2px solid #6d8191;
 }
-.table tbody tr td:first-child {
+
+.user-list tbody tr td:first-child {
     font-size: 1.125em;
     font-weight: 300;
 }
-.table tbody tr td {
+
+.user-list tbody tr td {
     font-size: 0.875em;
     vertical-align: middle;
     border-top: 1px solid #758c9e;
     padding: 12px 8px;
 }
-

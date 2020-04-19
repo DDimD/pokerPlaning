@@ -200,3 +200,12 @@ func (srv *Server) userExist(username string) bool {
 	_, ok := srv.clients[username]
 	return ok
 }
+
+//GetClients return all clients in array
+func (srv *Server) GetClients() []Client {
+	clients := make([]Client, len(srv.clients)+1)
+	for _, val := range srv.clients {
+		clients = append(clients, *val)
+	}
+	return clients
+}

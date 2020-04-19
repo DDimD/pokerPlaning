@@ -5,7 +5,6 @@ textarea {
 html,
 body {
     background-color: #222;
-    color: #aaa;    
     height: 100%;
     max-width: 1200px;
     margin: auto;
@@ -34,12 +33,6 @@ body {
     box-shadow: none;
 }
 
-
-
-#chatBox {
-    overflow-y: auto;
-}
-
 .input-group-prepend {
     min-width: 60px;
 }
@@ -50,22 +43,27 @@ body {
     text-align: left;
 }
 
-.table {
-    color: #aaa
-}
-
 .voteCard {
     background-color: #444;
     border-width: 1px;
     border-radius: 5%;
     border-color: #555;
+    color: #aaa;
     height: 154px;
     width: 110px;
     user-select: none;
 }
 
+.voteCard:hover {
+    box-shadow: 0 0 0 3px #375a7f;
+}
+
+.voteCard:focus {
+    box-shadow: 0 0 0 3px #375a7f;
+}
+
 .voteCard .number {
-    line-height: 20px;
+    line-height: 20pt;
     font-size: 26pt;
 }
 
@@ -77,15 +75,51 @@ body {
     font-size: 20pt;
 }
 
+.voteCard div {
+    width: inherit;
+}
+
 .voteCard .card-center.fa {
     font-size: 30pt;
 }
 
-.card-body{
-    color:#ccc
+#avg {
+    color: #ccc
 }
 
-.avatar{
+.avatar {
     width: 50px;
     height: 50px;
+}
+
+.card {
+    color: #aaa;
+    font-size: 16pt;
+}
+
+.card .table{
+    color: #aaa;
+}
+
+.card-body h4 {
+    font-size: 18pt;
+}
+
+.modal{
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+.modal input {
+    background-color: #aaa;
+}
+
+.modal input:focus {
+    background-color: #aaa;
+}
+
+.modal select{
+    background-color: #aaa;
+}
+
+.modal select:focus{
+    background-color: #aaa;
 }
