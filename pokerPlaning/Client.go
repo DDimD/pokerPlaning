@@ -16,8 +16,8 @@ const (
 
 // Client
 type Client struct {
-	name      string
-	role      Role
+	Name      string
+	Role      Role
 	webSocket *websocket.Conn
 	server    *Server
 	// buffered channel to send messages to the client
@@ -64,7 +64,7 @@ func (cl *Client) readCommand() {
 
 		switch cmd.Command {
 		case "startVote":
-			if cl.role == ProjectManager {
+			if cl.Role == ProjectManager {
 				var startData StartVoteData
 
 				if nil != cl.readJSON(&startData) {
@@ -76,7 +76,7 @@ func (cl *Client) readCommand() {
 			}
 			//TODO: sendError
 		case "vote":
-			if cl.role == ProjectManager {
+			if cl.Role == ProjectManager {
 				break
 			}
 
@@ -86,7 +86,7 @@ func (cl *Client) readCommand() {
 			}
 
 			var outVote OutputVote
-			outVote.UserName = cl.name
+			outVote.UserName = cl.Name
 			outVote.Vote = vote
 
 			cl.server.vote <- &outVote
@@ -112,7 +112,7 @@ func (cl *Client) readJSON(val interface{}) error {
 	err := cl.webSocket.ReadJSON(&val)
 
 	if err != nil {
-		log.Printf("client %s %v", cl.name, err)
+		log.Printf("client %s %v", cl.Name, err)
 	}
 
 	return err
@@ -125,7 +125,7 @@ func (cl *Client) sendResults() {
 
 		err := cl.webSocket.WriteJSON(res)
 		if err != nil {
-			log.Printf("client %s %v", cl.name, err)
+			log.Printf("client %s %v", cl.Name, err)
 			break
 		}
 	}

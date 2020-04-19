@@ -100,20 +100,20 @@ func (srv *Server) Listen() {
 	for {
 		select {
 		case client := <-srv.addClient:
-			if client.role == ProjectManager {
+			if client.Role == ProjectManager {
 				srv.PMClient = client
 			} else {
-				srv.clients[client.name] = client
+				srv.clients[client.Name] = client
 			}
-			log.Printf("user %s connected", client.name)
+			log.Printf("user %s connected", client.Name)
 
 		case client := <-srv.removeClient:
-			if client.role == ProjectManager {
+			if client.Role == ProjectManager {
 				srv.PMClient = nil
 			} else {
-				delete(srv.clients, client.name)
+				delete(srv.clients, client.Name)
 			}
-			log.Printf("client %s removed", client.name)
+			log.Printf("client %s removed", client.Name)
 
 		case data := <-srv.startVote:
 			if srv.voteStoped {
@@ -203,9 +203,18 @@ func (srv *Server) userExist(username string) bool {
 
 //GetClients return all clients in array
 func (srv *Server) GetClients() []Client {
-	clients := make([]Client, len(srv.clients)+1)
+	clients := make([]Client, 0, len(srv.clients)+1)
 	for _, val := range srv.clients {
 		clients = append(clients, *val)
 	}
+
+	if srv.PMClient != nil {
+		clients = append(clients, *srv.PMClient)
+	}
 	return clients
+}
+
+//GetTopicName returns current topic name
+func (srv *Server) GetTopicName() string {
+	return srv.currentTopicName
 }

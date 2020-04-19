@@ -20,7 +20,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-primary ">
         8 800 555 35 35
     </nav>
-    <div class="container-fluid mt-2">
+    <div class="container mt-2">
         <!-- Modal -->
         <!-- <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
             aria-hidden="true" data-backdrop="static">
@@ -65,61 +65,66 @@
         </div> -->
         <!-- Блок с картами -->
         <div class="row mt-4">
-            <div class="col-9">
+            <div class="col-lg-9 col-12">
                 <div class="row">
-                    <div class="col-3">
-                        <button class="p-0 voteCard card justify-content-around">
+                    {{range .Cards}}
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 pb-3">
+                        <button class="p-0 voteCard card justify-content-around" value="{{.Value}}"
+                            data-question="{{.IsQuestion}}" data-coffee="{{.IsCoffee}}">
                             <div class="d-flex mb-auto bd-highlight">
-                                <span class="number mr-auto mr-auto ml-1 mt-1">
-                                    <b>0</b>
-                                </span>
-                            </div>
-                            <div class="d-flex bd-highlight m-auto">
-                                <span class="number m-auto card-center">
-                                    <b>0</b>
-                                </span>
-                            </div>
-                            <div class="d-flex mt-auto">
-                                <span class="number ml-auto  mb-1 mr-1">
-                                    <b>0</b>
-                                </span>
-                            </div>
-                        </button>
-                    </div>
-
-                    <div class="col-3">
-                        <button class="p-0 voteCard card justify-content-around">
-                            <div class="d-flex mb-auto bd-highlight">
+                                {{if .IsCoffee}}
                                 <span class="fa fa-coffee mr-auto mr-auto ml-1 mt-1">
                                 </span>
-                            </div>
-                            <div class="d-flex bd-highlight m-auto">
-                                <span class="fa fa-coffee m-auto card-center">
-                                </span>
-                            </div>
-                            <div class="d-flex mt-auto">
-                                <span class="fa fa-coffee ml-auto  mb-1 mr-1">
-                                </span>
-                            </div>
-                        </button>
-                    </div>
-                    
-                    <div class="col-3">
-                        <button class="p-0 voteCard card justify-content-around">
-                            <div class="d-flex mb-auto bd-highlight">
+                                {{else if .IsQuestion}}
                                 <span class="fa fa-question mr-auto mr-auto ml-1 mt-1">
                                 </span>
+                                {{else}}
+                                <span class="number mr-auto mr-auto ml-1 mt-1">
+                                    {{if eq .Value 0.5}}
+                                    <b>½</b>
+                                    {{else}}
+                                    <b>{{ .Value }}</b>
+                                    {{end}}
+                                </span>
+                                {{end}}
                             </div>
                             <div class="d-flex bd-highlight m-auto">
+                                {{if .IsCoffee}}
+                                <span class="fa fa-coffee m-auto card-center">
+                                </span>
+                                {{else if .IsQuestion}}
                                 <span class="fa fa-question m-auto card-center">
                                 </span>
+                                {{else}}
+                                <span class="number m-auto card-center">
+                                    {{if eq .Value 0.5}}
+                                    <b>½</b>
+                                    {{else}}
+                                    <b>{{ .Value }}</b>
+                                    {{end}}
+                                </span>
+                                {{end}}
                             </div>
                             <div class="d-flex mt-auto">
+                                {{if .IsCoffee}}
+                                <span class="fa fa-coffee ml-auto  mb-1 mr-1">
+                                </span>
+                                {{else if .IsQuestion}}
                                 <span class="fa fa-question ml-auto  mb-1 mr-1">
                                 </span>
+                                {{else}}
+                                <span class="number ml-auto  mb-1 mr-1">
+                                    {{if eq .Value 0.5}}
+                                    <b>½</b>
+                                    {{else}}
+                                    <b>{{ .Value }}</b>
+                                    {{end}}
+                                </span>
+                                {{end}}
                             </div>
                         </button>
                     </div>
+                    {{end}}
                 </div>
                 <div class="row mt-4 justify-content-center">
                     <div class="col-auto">
@@ -129,7 +134,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-3">
+            <div class="col-lg-3 col-xs-12">
                 <div class="main-box no-header clearfix">
                     <div class="main-box-body clearfix">
                         <div class="table-responsive">
