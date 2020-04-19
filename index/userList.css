@@ -1,0 +1,58 @@
+.main-box.no-header {
+    padding-top: 20px;
+}
+.main-box {
+    background: #444;
+    -webkit-box-shadow: 1px 1px 2px 0 #888;
+    -moz-box-shadow: 1px 1px 2px 0 #888;
+    -o-box-shadow: 1px 1px 2px 0 #888;
+    -ms-box-shadow: 1px 1px 2px 0 #888;
+    box-shadow: 1px 1px 2px 0 #888;
+    margin-bottom: 16px;
+    -webikt-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+
+.label {
+    border-radius: 3px;
+    font-size: 0.875em;
+    font-weight: 600;
+}
+.user-list tbody td .user-subhead {
+    font-size: 0.875em;
+    font-style: italic;
+}
+.user-list tbody td .user-link {
+    display: block;
+    font-size: 1.25em;
+    padding-top: 3px;
+    margin-left: 60px;
+}
+
+.user-list tbody td>img {
+    position: relative;
+    max-width: 50px;
+    float: left;
+    margin-right: 15px;
+}
+
+.table thead tr th {
+    border-color: #6d8191;
+    text-transform: uppercase;
+    font-size: 0.875em;
+}
+.table thead tr th {
+    border-bottom: 2px solid #6d8191;
+}
+.table tbody tr td:first-child {
+    font-size: 1.125em;
+    font-weight: 300;
+}
+.table tbody tr td {
+    font-size: 0.875em;
+    vertical-align: middle;
+    border-top: 1px solid #758c9e;
+    padding: 12px 8px;
+}
+

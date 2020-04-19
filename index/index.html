@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1, user-scalable=0">
+    <title>
+        Poker Plan
+    </title>
+    <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <link rel="stylesheet" type="text/css" href="userList.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
+        integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-primary ">
+        8 800 555 35 35
+    </nav>
+    <div class="container-fluid mt-2 h-100">
+        <!-- Modal -->
+        <!-- <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+            aria-hidden="true" data-backdrop="static">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLongTitle">
+                            Pocker Planing. Pre-pre-pre-Alfa
+                        </h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="input-group form-group mb-3">
+                            <div class="input-group-prepend">
+                                <label class="input-group-text">
+                                    Имя
+                                </label>
+                            </div>
+                            <input type="text" class="form-control" required placeholder="Ваше имя" aria-label="Nickname"
+                                aria-describedby="basic-addon1" id="username">
+                        </div>
+                        <div class="input-group  form-group mb-3">
+                            <div class="input-group-prepend">
+                                <label class="input-group-text">
+                                    Роль
+                                </label>
+                            </div>
+                            <select class="custom-select form-control" required  id="role">
+                                <option value="1">PM</option>
+                                <option value="2">Developer</option>
+                                <option value="3">QA</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="col-sm mb-1 d-none text-danger" id="autorizationMessage">
+                            Данное имя уже занято
+                        </div>
+                        <button type="button" class="btn btn-primary" id="autorization"></button>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+        <!-- Блок с картами -->
+        <div class="row mt-4">
+            <div class="col-9">
+                <div class="row">
+                    <div class="col-3">
+                        <div class="voteCard card">
+                            <div class="d-flex mb-auto bd-highlight">
+                                <span class="number mr-auto mr-auto ml-1 mt-1">
+                                    0
+                                </span>
+                            </div>
+                            <div class="d-flex bd-highlight m-auto">
+                                <span class="number m-auto card-center">
+                                    <b>0</b>
+                                </span>
+                            </div>
+                            <div class="d-flex mt-auto bd-highlight">
+                                <span class="number ml-auto ml-auto mb-1 mr-1">
+                                    0
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="voteCard card">
+                            <div class="d-flex mb-auto bd-highlight">
+                                <span class="fa  fa-coffee mr-auto ml-1 mt-1">
+                                </span>
+                            </div>
+                            <div class="d-flex bd-highlight m-auto">
+                                <span class="fa  fa-coffee m-auto card-center">
+                                </span>
+                            </div>
+                            <div class="d-flex mt-auto bd-highlight">
+                                <span class="fa  fa-coffee ml-auto mb-1 mr-1">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-3">
+                        <div class="voteCard card">
+                            <div class="d-flex mb-auto bd-highlight">
+                                <span class="fa  fa-question mr-auto ml-1 mt-1">
+                                </span>
+                            </div>
+                            <div class="d-flex bd-highlight m-auto">
+                                <span class="fa  fa-question m-auto card-center">
+                                </span>
+                            </div>
+                            <div class="d-flex mt-auto bd-highlight">
+                                <span class="fa  fa-question ml-auto mb-1 mr-1">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-4 justify-content-center">
+                    <div class="col-auto">
+                        <button class="btn btn-success" id="startVote">
+                            Старт голосования
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="main-box no-header clearfix">
+                    <div class="main-box-body clearfix">
+                        <div class="table-responsive">
+                            <table class="table user-list">
+                                <thead>
+                                    <tr>
+                                        <th><span>Участники</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <img class="avatar  rounded-circle" src="48-512.png" alt="">
+                                            <span>full name</span>
+                                            <br>
+                                            <span class="user-subhead" class="role">Developer</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <img class="avatar rounded-circle" src="48-512.png" alt="">
+                                            <span>full name</span>
+                                            <br>
+                                            <span class="user-subhead" class="role">Developer</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-9">
+            <div class="card" id="voteResultBlock">
+                <div class="card-header">
+                    <h4>
+                        Голосование окончено
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <h4 class="card-title">Результат</h4>
+                    <p class="card-text">Трудозатрат в днях: 5.8</p>
+                    <table class="table user-votes">
+                        <thead>
+                            <tr>
+                                <th><span>Участник</span></th>
+                                <th><span>Голос</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <img class="avatar  rounded-circle" src="48-512.png" alt="">
+                                    <span>full name</span>
+                                </td>
+                            <td>5</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- Конец блока с картами -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
+        </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+        </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+        </script>
+</body>
+<script src="clientHandler.js"></script>
+
+</html>

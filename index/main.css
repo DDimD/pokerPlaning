@@ -1,0 +1,91 @@
+textarea {
+    resize: none;
+}
+
+html,
+body {
+    background-color: #222;
+    color: #aaa;    
+    height: 100%;
+    max-width: 1200px;
+    margin: auto;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+/* .card {
+    height: 100%;
+} */
+
+.h-80 {
+    height: 80% !important
+}
+
+.h-95 {
+    height: 95% !important
+}
+
+.h-10 {
+    height: 10% !important
+}
+
+#sendMessage,
+#sendMessage:active {
+    border-radius: 100px;
+    box-shadow: none;
+}
+
+
+
+#chatBox {
+    overflow-y: auto;
+}
+
+.input-group-prepend {
+    min-width: 60px;
+}
+
+
+.input-group-text {
+    min-width: 100%;
+    text-align: left;
+}
+
+.table {
+    color: #aaa
+}
+
+.voteCard {
+    background-color: #444;
+    border-width: 1px;
+    border-radius: 5%;
+    border-color: #555;
+    height: 154px;
+    width: 110px;
+    user-select: none;
+}
+
+.voteCard .number {
+    line-height: 20px;
+    font-size: 26pt;
+}
+
+.voteCard .number.card-center {
+    font-size: 45pt;
+}
+
+.voteCard .fa {
+    font-size: 20pt;
+}
+
+.voteCard .card-center.fa {
+    font-size: 30pt;
+}
+
+.card-body{
+    color:#ccc
+}
+
+.avatar{
+    width: 50px;
+    height: 50px;
+}

@@ -1,4 +1,4 @@
-package chat
+package pokerplan
 
 // Message struct for sending message to clients
 type OutputMessage struct {
