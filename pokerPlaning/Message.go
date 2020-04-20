@@ -21,6 +21,10 @@ type User struct {
 	Role string
 }
 
+type voteStartedEvent struct {
+	Command string
+}
+
 type ConnectClientMessage struct {
 	Command  string
 	UserName string

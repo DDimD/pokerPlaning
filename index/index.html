@@ -47,7 +47,7 @@
                                     Роль
                                 </label>
                             </div>
-                            <select class="custom-select form-control" required  id="role">
+                            <select class="custom-select form-control" required id="role">
                                 <option value="1">PM</option>
                                 <option value="2">Developer</option>
                                 <option value="3">QA</option>
@@ -67,10 +67,38 @@
         <div class="row mt-4">
             <div class="col-lg-9 col-12">
                 <div class="row">
+                    <div class="col-12">
+                        <div class="card" id="voteResultBlock" style="display: none;">
+                            <div class="card-header">
+                                <h4>
+                                    Голосование окончено
+                                </h4>
+                            </div>
+                            <div class="card-body">
+                                <div id='avg'>
+                                    <h4 class="card-title">Результат</h4>
+                                    <p class="card-text" id="voteResult">Трудозатрат в днях: 5.8</p>
+                                </div>
+                            </div>
+                            <table class="mt-2 mb-0 table table-striped table-dark userVotes">
+                                <thead>
+                                    <tr>
+                                        <th><span>Участник</span></th>
+                                        <th><span>Голос</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userVotesList">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" id="cardBlock" style="display: none;">
                     {{range .Cards}}
                     <div class="col-6 col-sm-4 col-md-3 col-lg-2 pb-3">
                         <button type="button" class="btn p-0 voteCard card justify-content-around" value="{{.Value}}"
-                            data-question="{{.IsQuestion}}" data-coffee="{{.IsCoffee}}" data-toggle="button" aria-pressed="false" autocomplete="off">
+                            data-question="{{.IsQuestion}}" data-coffee="{{.IsCoffee}}" data-toggle="button" aria-pressed="false"
+                            autocomplete="off">
                             <div class="d-flex mb-auto bd-highlight">
                                 {{if .IsCoffee}}
                                 <span class="fa fa-coffee mr-auto mr-auto ml-1 mt-1">
@@ -128,8 +156,8 @@
                 </div>
                 <div class="row mt-4 justify-content-center">
                     <div class="col-auto">
-                        <input class="text form-control" id="topicName">
-                        <button class="btn btn-outline-success" id="startVote">
+                        <input hidden class="text form-control" id="topicName">
+                        <button class="btn btn-lg   btn-outline-success" id="startVote">
                             Старт голосования
                         </button>
                     </div>
@@ -163,36 +191,9 @@
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-9">
-                <div class="card" id="voteResultBlock">
-                    <div class="card-header">
-                        <h4>
-                            Голосование окончено
-                        </h4>
-                    </div>
-                    <div class="card-body">
-                        <div id='avg'>
-                            <h4 class="card-title">Результат</h4>
-                            <p class="card-text" id="voteResult">Трудозатрат в днях: 5.8</p>
-                        </div>
-                    </div>
-                    <table class="mt-2 mb-0 table table-striped table-dark userVotes">
-                        <thead>
-                            <tr>
-                                <th><span>Участник</span></th>
-                                <th><span>Голос</span></th>
-                            </tr>
-                        </thead>
-                        <tbody id="userVotesList">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
     </div>
 
-    
+
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
         </script>

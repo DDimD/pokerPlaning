@@ -26,6 +26,7 @@ type Client struct {
 	send             chan *VoteResultMessage
 	clientConnect    chan *ConnectClientMessage
 	clientDisconnect chan *DisconectClientMessage
+	voteStarted      chan *voteStartedEvent
 }
 
 //NewClient create new client
@@ -45,6 +46,7 @@ func NewClient(clientName string, role Role, webSocket *websocket.Conn, server *
 		make(chan *VoteResultMessage),
 		make(chan *ConnectClientMessage),
 		make(chan *DisconectClientMessage),
+		make(chan *voteStartedEvent),
 	}
 }
 
@@ -143,6 +145,8 @@ func (cl *Client) sendResults() {
 			cl.webSocket.WriteJSON(newClient)
 		case disconnectClient := <-cl.clientDisconnect:
 			cl.webSocket.WriteJSON(disconnectClient)
+		case voteStarted := <-cl.voteStarted:
+			cl.webSocket.WriteJSON(voteStarted)
 		}
 	}
 }

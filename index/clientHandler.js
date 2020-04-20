@@ -4,6 +4,7 @@ window.onload = function () {
     $('#exampleModalCenter').modal('show')
 }
 
+
 $('#autorization').on('click', function () {
     let username = $('#username').val()
     let role = $('#role').val()
@@ -48,8 +49,18 @@ $('#autorization').on('click', function () {
         if (message.Command === 'disconnect') {
             removeUser(message);    
         }
+
+        if(message.Command === 'voteStart')
+        {
+            voteStart();
+        }
     }
 })
+
+function voteStart(){
+    $("#startVote").show();
+    $("#cardBlock").show();
+}
 
 function addUser(user){
   let element = '<img class="avatar  rounded-circle" src="48-512.png" alt="">\
@@ -94,7 +105,12 @@ function showResults(message) {
         }
 
     });
+
+    
+    $("#cardBlock").hide();
+    $("#startVote").show();
     $('#voteResultBlock').show()
+    
 }
 
 function messagesHandler() {

@@ -129,6 +129,7 @@ func (srv *Server) start(data StartVoteData) {
 	srv.currentTopicName = data.TopicName
 	srv.voteList = make(map[string]*OutputVote)
 	srv.voteStoped = false
+	srv.voteStarted()
 }
 
 func (srv *Server) addNewVote(vote *OutputVote) {
@@ -163,6 +164,14 @@ func (srv *Server) disconnectClient(rmClient *Client) {
 		client.clientDisconnect <- &DisconectClientMessage{
 			"disconnect",
 			rmClient.Name,
+		}
+	}
+}
+
+func (srv *Server) voteStarted() {
+	for _, client := range srv.clients {
+		client.voteStarted <- &voteStartedEvent{
+			"voteStart",
 		}
 	}
 }
