@@ -60,6 +60,10 @@ $('#autorization').on('click', function () {
 function voteStart(){
     $("#startVote").show();
     $("#cardBlock").show();
+    let tableRef = document.getElementById('userVotesList');
+    for(let i = 0; i < tableRef.rows.length;){
+        tableRef.deleteRow(i);
+    }
 }
 
 function addUser(user){

@@ -48,9 +48,9 @@
                                 </label>
                             </div>
                             <select class="custom-select form-control" required id="role">
-                                <option value="1">PM</option>
+<!--                                <option value="1">PM</option>-->
                                 <option value="2">Developer</option>
-                                <option value="3">QA</option>
+<!--                                <option value="3">QA</option>-->
                             </select>
                         </div>
                     </div>
@@ -174,16 +174,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="userList">
-                                    {{range .Users}}
-                                    <tr id="user_{{.Name}}">
-                                        <td>
-                                            <img class="avatar  rounded-circle" src="48-512.png" alt="">
-                                            <span>{{.Name}}</span>
-                                            <br>
-                                            <span class="user-subhead" class="role">{{.Role}}</span>
-                                        </td>
-                                    </tr>
-                                    {{end}}
+
                                 </tbody>
                             </table>
                         </div>
