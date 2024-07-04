@@ -61,17 +61,22 @@ type ViewData struct {
 
 func prepareCards() []card {
 	cards := make([]card, 0, 12)
-	var cache [2]float64
+
 	cards = append(cards, card{0., false, false})
 	cards = append(cards, card{0.5, false, false})
-	cache[0] = 0
-	cache[1] = 1
-
-	for i := 0; i < 8; i++ {
-		cache[i%2] = cache[0] + cache[1]
-		cards = append(cards, card{cache[i%2], false, false})
-	}
-
+	cards = append(cards, card{1, false, false})
+	cards = append(cards, card{2, false, false})
+	cards = append(cards, card{4, false, false})
+	cards = append(cards, card{6, false, false})
+	cards = append(cards, card{8, false, false})
+	cards = append(cards, card{10, false, false})
+	cards = append(cards, card{12, false, false})
+	cards = append(cards, card{16, false, false})
+	cards = append(cards, card{20, false, false})
+	cards = append(cards, card{24, false, false})
+	cards = append(cards, card{28, false, false})
+	cards = append(cards, card{32, false, false})
+	cards = append(cards, card{40, false, false})
 	cards = append(cards, card{0., true, false})
 	cards = append(cards, card{0., false, true})
 	return cards

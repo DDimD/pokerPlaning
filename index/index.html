@@ -48,9 +48,9 @@
                                 </label>
                             </div>
                             <select class="custom-select form-control" required id="role">
-<!--                                <option value="1">PM</option>-->
                                 <option value="2">Developer</option>
-<!--                                <option value="3">QA</option>-->
+                                <option value="1">Observer</option>
+                                <option value="3">Maintainer</option>
                             </select>
                         </div>
                     </div>
@@ -77,7 +77,7 @@
                             <div class="card-body">
                                 <div id='avg'>
                                     <h4 class="card-title">Результат</h4>
-                                    <p class="card-text" id="voteResult">Трудозатрат в днях: 5.8</p>
+                                    <p class="card-text" id="voteResult">Трудозатрат в часах: 5.8</p>
                                 </div>
                             </div>
                             <table class="mt-2 mb-0 table table-striped table-dark userVotes">
@@ -157,6 +157,7 @@
                 <div class="row mt-4 justify-content-center">
                     <div class="col-auto">
                         <input hidden class="text form-control" id="topicName">
+
                         <button class="btn btn-lg   btn-outline-success" id="startVote">
                             Старт голосования
                         </button>

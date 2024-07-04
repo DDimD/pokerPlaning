@@ -29,11 +29,13 @@ type ConnectClientMessage struct {
 	Command  string
 	UserName string
 	Role     string
+	Online   bool
 }
 
 type DisconectClientMessage struct {
 	Command  string
 	UserName string
+	Ip       string
 }
 
 type VoteResultMessage struct {

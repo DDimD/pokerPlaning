@@ -1,11 +1,14 @@
 package pokerplan
 
 import (
+	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
+	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -53,16 +56,6 @@ func (srv *Server) connectHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("connectHandler ParseForm err: %v", err)
 	}
 
-	username := r.FormValue("username")
-	roleInt, _ := strconv.Atoi(r.FormValue("role"))
-	role := (Role)(roleInt)
-
-	//check valid value username parameter
-	if len(username) < 1 {
-		log.Println("wrong username param")
-		return
-	}
-
 	var upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -74,16 +67,38 @@ func (srv *Server) connectHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//check username existence
-	if srv.userExist(username) {
-		webSocket.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(4018, "username already used"))
-		webSocket.Close()
-		log.Printf("Username %s already used", username)
-		return
-	}
-	//TODO: need check valid role
+	ip := strings.Split(r.RemoteAddr, ":")[0]
+	client, ok := srv.clients[ip]
 
-	client := NewClient(username, role, webSocket, srv)
+	if !ok {
+		username := r.FormValue("username")
+		roleInt, _ := strconv.Atoi(r.FormValue("role"))
+		role := (Role)(roleInt)
+
+		usernameValidation := regexp.MustCompile(`[A-zА-я .-]*`)
+		usernameValid := usernameValidation.Match([]byte(username))
+
+		//check valid value username parameter
+		if len(username) < 1 && !usernameValid {
+			log.Println("wrong username param")
+			return
+		}
+
+		//check username existence
+		if srv.userExist(username) {
+			webSocket.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(4018, "username already used"))
+			webSocket.Close()
+			log.Printf("Username %s already used", username)
+			return
+		}
+		//TODO: need check valid role
+
+		client = NewClient(username, role, webSocket, srv, ip)
+	} else {
+		client.webSocket.Close()
+		client.webSocket = webSocket
+	}
+
 	srv.addClient <- client
 	for _, srvclient := range srv.clients {
 		if client.Name == srvclient.Name {
@@ -94,6 +109,7 @@ func (srv *Server) connectHandler(w http.ResponseWriter, r *http.Request) {
 			"connect",
 			srvclient.Name,
 			getRoleDescription(srvclient.Role),
+			srvclient.Online,
 		}
 
 		webSocket.WriteJSON(clientMessage)
@@ -117,20 +133,26 @@ connect a client by socket, handle adding and deleting clients,
 */
 func (srv *Server) Listen() {
 	http.HandleFunc("/checkUserName", srv.checkUsernameHandler)
+	http.HandleFunc("/whoami", srv.whoamiHandler)
 	http.HandleFunc(srv.pattern, srv.connectHandler)
 
 	for {
 		select {
 		case client := <-srv.addClient:
-			srv.clients[client.Name] = client
+			_, ok := srv.clients[client.IP]
+			if ok {
+				srv.clients[client.IP].Online = true
+			} else {
+				srv.clients[client.IP] = client
+			}
+
 			log.Printf("user %s connected", client.Name)
 			srv.connectClient(client)
 
 		case client := <-srv.removeClient:
-			delete(srv.clients, client.Name)
+			srv.clients[client.IP].Online = false
 			log.Printf("client %s removed", client.Name)
 			srv.disconnectClient(client)
-
 		case data := <-srv.startVote:
 			if srv.voteStoped {
 				srv.start(data)
@@ -166,7 +188,7 @@ func (srv *Server) addNewVote(vote *OutputVote) {
 func (srv *Server) lenDevClients() int {
 	cnt := 0
 	for _, cl := range srv.clients {
-		if cl.Role != ProjectManager {
+		if cl.Role != Observer && cl.Online == true {
 			cnt++
 		}
 	}
@@ -179,6 +201,7 @@ func (srv *Server) connectClient(newClient *Client) {
 			"connect",
 			newClient.Name,
 			getRoleDescription(newClient.Role),
+			client.Online,
 		}
 	}
 }
@@ -188,6 +211,7 @@ func (srv *Server) disconnectClient(rmClient *Client) {
 		client.clientDisconnect <- &DisconectClientMessage{
 			"disconnect",
 			rmClient.Name,
+			client.IP,
 		}
 	}
 }
@@ -201,8 +225,8 @@ func (srv *Server) voteStarted() {
 }
 
 func (srv *Server) calculateResult() {
-	var sum float64 = 0.
-	var cnt float64 = 0.
+	var sum = 0.
+	var cnt = 0.
 
 	for _, vote := range srv.voteList {
 		if vote.Vote.IsCoffeeBreak || vote.Vote.IsQuestionMark {
@@ -210,6 +234,10 @@ func (srv *Server) calculateResult() {
 		}
 		sum += vote.Vote.Value
 		cnt++
+	}
+
+	if cnt == 0. {
+		cnt = 1.
 	}
 	srv.voteResult = sum / cnt
 	fmt.Println(cnt)
@@ -236,7 +264,7 @@ func (srv *Server) sendVoteResultToAll() {
 
 // checkUsernameHandler ajax request to verify the use of the given username
 func (srv *Server) checkUsernameHandler(rw http.ResponseWriter, req *http.Request) {
-	message, err := ioutil.ReadAll(req.Body)
+	message, err := io.ReadAll(req.Body)
 	if err != nil {
 		panic(fmt.Sprintf("username check request read error"))
 	}
@@ -249,6 +277,37 @@ func (srv *Server) checkUsernameHandler(rw http.ResponseWriter, req *http.Reques
 	}
 
 	rw.Write([]byte("username not used"))
+}
+
+type whoamiResponse struct {
+	Name string
+	Role Role
+}
+
+func (srv *Server) whoamiHandler(rw http.ResponseWriter, req *http.Request) {
+	ip := strings.Split(req.RemoteAddr, ":")[0]
+	client, ok := srv.clients[ip]
+
+	if !ok {
+		rw.WriteHeader(http.StatusNotFound)
+		return
+	}
+	respRaw := &whoamiResponse{
+		Name: client.Name,
+		Role: client.Role,
+	}
+	resp, err := json.Marshal(respRaw)
+
+	if err != nil {
+		log.Printf("whoamiHandler err %s", err)
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	rw.WriteHeader(http.StatusFound)
+	rw.Write(resp)
+	return
+
 }
 
 // UserExist check user exist in server clients map
@@ -280,11 +339,11 @@ func (srv *Server) GetTopicName() string {
 func getRoleDescription(role Role) string {
 	switch role {
 	case 1:
-		return "PM"
+		return "Observer"
 	case 2:
 		return "Developer"
 	case 3:
-		return "QA"
+		return "Maintainer"
 	default:
 		return "XZ"
 	}

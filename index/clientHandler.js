@@ -1,7 +1,19 @@
 var websock;
 
 window.onload = function () {
-    $('#exampleModalCenter').modal('show')
+    let xmlHttpRequest = new XMLHttpRequest();
+    xmlHttpRequest.open('POST', 'whoami', false);
+    xmlHttpRequest.send();
+
+    if (xmlHttpRequest.status == 404) {
+        $('#exampleModalCenter').modal('show')
+    } else {
+        let data = JSON.parse(xmlHttpRequest.response);
+        let username = data.Name;
+        let role = data.Role;
+
+        connect(username, role)
+    }
 }
 
 
@@ -18,6 +30,10 @@ $('#autorization').on('click', function () {
         return
     }
 
+    connect(username, role)
+})
+
+function connect(username, role) {
     websock = new WebSocket("ws://" + window.location.host + "/websocket?username=" + username + '&role=' + role)
 
     websock.onopen = function () {
@@ -44,10 +60,10 @@ $('#autorization').on('click', function () {
         }
 
         if (message.Command === 'connect') {
-            addUser(message);   
+            addUser(message);
         }
         if (message.Command === 'disconnect') {
-            removeUser(message);    
+            removeUser(message);
         }
 
         if(message.Command === 'voteStart')
@@ -55,10 +71,10 @@ $('#autorization').on('click', function () {
             voteStart();
         }
     }
-})
+}
 
 function voteStart(){
-    $("#startVote").show();
+    $("#startVote").hide();
     $("#cardBlock").show();
     let tableRef = document.getElementById('userVotesList');
     for(let i = 0; i < tableRef.rows.length;){
@@ -67,7 +83,24 @@ function voteStart(){
 }
 
 function addUser(user){
-  let element = '<img class="avatar  rounded-circle" src="48-512.png" alt="">\
+    let elem = $('#user_' + user.UserName + ' .circle');
+    if (elem.length) {
+        elem.removeClass('darkred');
+        elem.addClass('green');
+        return;
+    }
+
+  let onlineCircleClass = 'darkred';
+
+    if (user.Online === true) {
+      onlineCircleClass = 'green';
+  }
+
+  let element = '\
+        <span class="avatar">\
+            <img class="avatar rounded-circle" src="48-512.png" alt="">\
+            <span class="fa fa-circle circle ' + onlineCircleClass + '"></span>\
+        </span>\
         <span>'+user.UserName+'</span>\
         <br>\
         <span class="user-subhead" class="role">'+user.Role+'</span>'
@@ -80,12 +113,13 @@ UserCell.innerHTML = element
 }
 
 function removeUser(user){
-    var elem = $('#user_'+user.UserName);
-    elem.remove();
+    var elem = $('#user_'+user.UserName+' .circle');
+    elem.removeClass('green');
+    elem.addClass('darkred');
 }
 
 function showResults(message) {
-    $('#voteResult').html('Итогоговая оценка в днях: ' + message.voteResult);
+    $('#voteResult').html('Итогоговая оценка в часах: ' + message.voteResult);
     users = new Map(Object.entries(message.votes))
     users.forEach(element => {
         let tableRef = document.getElementById('userVotesList');
@@ -114,7 +148,7 @@ function showResults(message) {
     $("#cardBlock").hide();
     $("#startVote").show();
     $('#voteResultBlock').show()
-    
+    $('.voteCard').removeClass('active')
 }
 
 function messagesHandler() {
@@ -127,18 +161,6 @@ function messagesHandler() {
         var chatField = document.getElementById("chatMessages")
         chatField.value += this.responseText
     }
-}
-
-function sendMessage() {
-    var xmlHttpRequest = new XMLHttpRequest();
-
-    xmlHttpRequest.open('POST', 'sendMessage', true);
-
-    var message = document.getElementById("messageWriter").value
-    xmlHttpRequest.send(message);
-
-    xmlHttpRequest.onreadystatechange = messagesHandler
-
 }
 
 $('#startVote').keypress(function (event) {

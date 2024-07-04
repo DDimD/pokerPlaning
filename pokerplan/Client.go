@@ -3,23 +3,24 @@ package pokerplan
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-
 	"github.com/gorilla/websocket"
+	"log"
 )
 
 type Role uint8
 
 const (
-	ProjectManager Role = 1
-	Developer           = 2
-	QA                  = 3
+	Observer   Role = 1
+	Developer  Role = 2
+	Maintainer Role = 3
 )
 
 // Client
 type Client struct {
 	Name      string
 	Role      Role
+	IP        string
+	Online    bool
 	webSocket *websocket.Conn
 	server    *Server
 	// buffered channel to send messages to the client
@@ -30,7 +31,7 @@ type Client struct {
 }
 
 // NewClient create new client
-func NewClient(clientName string, role Role, webSocket *websocket.Conn, server *Server) *Client {
+func NewClient(clientName string, role Role, webSocket *websocket.Conn, server *Server, ip string) *Client {
 	if webSocket == nil {
 		panic("websocket should be not nil")
 	}
@@ -41,6 +42,8 @@ func NewClient(clientName string, role Role, webSocket *websocket.Conn, server *
 	return &Client{
 		clientName,
 		role,
+		ip,
+		true,
 		webSocket,
 		server,
 		make(chan *VoteResultMessage),
@@ -72,10 +75,10 @@ func (cl *Client) readCommand() {
 
 		switch cmd.Command {
 		case "startVote":
-			if cl.Role == Developer {
+			if cl.Role == Maintainer {
 				var startData StartVoteData
 
-				if nil != json.Unmarshal([]byte(cmd.Message), &startData) {
+				if nil != json.Unmarshal(cmd.Message, &startData) {
 					break
 				}
 
@@ -84,12 +87,12 @@ func (cl *Client) readCommand() {
 			}
 			//TODO: sendError
 		case "vote":
-			if cl.Role == ProjectManager {
+			if cl.Role == Observer {
 				break
 			}
 
 			var vote Vote
-			err := json.Unmarshal([]byte(cmd.Message), &vote)
+			err := json.Unmarshal(cmd.Message, &vote)
 			if err != nil {
 				fmt.Println(err)
 				break

@@ -37,7 +37,7 @@
     margin-left: 60px;
 }
 
-.user-list tbody td>img {
+.user-list tbody td>.avatar {
     position: relative;
     max-width: 50px;
     float: left;
@@ -64,4 +64,17 @@
     vertical-align: middle;
     border-top: 1px solid #758c9e;
     padding: 12px 8px;
+}
+
+.circle {
+    position: absolute;
+    margin: 33px -17px;
+}
+
+.green {
+    color: green;
+}
+
+.darkred {
+    color: darkred;
 }
