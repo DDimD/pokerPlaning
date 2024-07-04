@@ -75,11 +75,11 @@ func (srv *Server) connectHandler(w http.ResponseWriter, r *http.Request) {
 		roleInt, _ := strconv.Atoi(r.FormValue("role"))
 		role := (Role)(roleInt)
 
-		usernameValidation := regexp.MustCompile(`[A-zА-я .-]*`)
+		usernameValidation := regexp.MustCompile(`^[A-zА-я .-]*$`)
 		usernameValid := usernameValidation.Match([]byte(username))
 
 		//check valid value username parameter
-		if len(username) < 1 && !usernameValid {
+		if len(username) < 1 || !usernameValid {
 			log.Println("wrong username param")
 			return
 		}
