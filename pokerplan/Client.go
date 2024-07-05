@@ -24,10 +24,11 @@ type Client struct {
 	webSocket *websocket.Conn
 	server    *Server
 	// buffered channel to send messages to the client
-	send             chan *VoteResultMessage
-	clientConnect    chan *ConnectClientMessage
-	clientDisconnect chan *DisconectClientMessage
-	voteStarted      chan *voteStartedEvent
+	send chan interface{}
+	done chan bool
+	//clientConnect    chan *ConnectClientMessage
+	//clientDisconnect chan *DisconectClientMessage
+	//voteStarted      chan *voteStartedMessage
 }
 
 // NewClient create new client
@@ -46,17 +47,15 @@ func NewClient(clientName string, role Role, webSocket *websocket.Conn, server *
 		true,
 		webSocket,
 		server,
-		make(chan *VoteResultMessage),
-		make(chan *ConnectClientMessage),
-		make(chan *DisconectClientMessage),
-		make(chan *voteStartedEvent),
+		make(chan interface{}),
+		make(chan bool),
 	}
 }
 
 // Listen function to listen for incoming and outgoing messages
 func (cl *Client) Listen() {
 	go cl.readCommand()
-	cl.sendResults()
+	go cl.sendResults()
 }
 
 // readMessage listen, sign and send an incoming message
@@ -64,7 +63,6 @@ func (cl *Client) Listen() {
 func (cl *Client) readCommand() {
 	defer func() {
 		cl.server.removeClient <- cl
-		cl.webSocket.Close()
 	}()
 
 	for {
@@ -103,23 +101,9 @@ func (cl *Client) readCommand() {
 			outVote.Vote = vote
 
 			cl.server.vote <- &outVote
-		default:
-			//TODO: sendError
 		}
 	}
 }
-
-// func (cl *Client) sendError() {
-// 	for {
-// 		msg := <-cl.send
-
-// 		err := cl.webSocket.WriteJSON(msg)
-// 		if err != nil {
-// 			log.Printf("client %s %v", cl.name, err)
-// 			break
-// 		}
-// 	}
-// }
 
 func (cl *Client) readJSON(val interface{}) error {
 	err := cl.webSocket.ReadJSON(&val)
@@ -143,13 +127,22 @@ func (cl *Client) sendResults() {
 				log.Printf("client %s %v", cl.Name, err)
 				break
 			}
+		case _, ok := <-cl.done:
+			if !ok {
+				return
+			}
 
-		case newClient := <-cl.clientConnect:
-			cl.webSocket.WriteJSON(newClient)
-		case disconnectClient := <-cl.clientDisconnect:
-			cl.webSocket.WriteJSON(disconnectClient)
-		case voteStarted := <-cl.voteStarted:
-			cl.webSocket.WriteJSON(voteStarted)
+		}
+	}
+}
+
+func (cl *Client) Send(message interface{}) {
+	select {
+	case cl.send <- message:
+	case _, ok := <-cl.done:
+		if !ok {
+			log.Printf("done signal client %s", cl.Name)
+			return
 		}
 	}
 }

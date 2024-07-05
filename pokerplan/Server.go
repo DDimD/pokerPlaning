@@ -22,8 +22,7 @@ type Server struct {
 	startVote         chan StartVoteData
 	addClient         chan *Client
 	removeClient      chan *Client
-	clients           map[string]*Client
-	rwMutex           sync.RWMutex
+	clients           sync.Map //map[string]*Client
 	voteList          map[string]*OutputVote
 	voteResult        float64
 	currentTopicName  string
@@ -33,18 +32,17 @@ type Server struct {
 // NewServer create server object
 func NewServer(pattern string) *Server {
 	return &Server{
-		pattern,
-		make(chan *OutputVote, 20),
-		make(chan bool, 5),
-		make(chan StartVoteData),
-		make(chan *Client, 10),
-		make(chan *Client, 10),
-		make(map[string]*Client),
-		sync.RWMutex{},
-		make(map[string]*OutputVote),
-		0,
-		"",
-		true,
+		pattern:           pattern,
+		vote:              make(chan *OutputVote, 20),
+		voteResultMessage: make(chan bool, 5),
+		startVote:         make(chan StartVoteData),
+		addClient:         make(chan *Client, 10),
+		removeClient:      make(chan *Client, 10),
+		clients:           sync.Map{},
+		voteList:          make(map[string]*OutputVote),
+		voteResult:        0,
+		currentTopicName:  "",
+		voteStoped:        true,
 	}
 }
 
@@ -68,12 +66,15 @@ func (srv *Server) connectHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ip := strings.Split(r.RemoteAddr, ":")[0]
-	client, ok := srv.clients[ip]
+	clientRaw, ok := srv.clients.Load(ip)
+	var client *Client
 
+	var username string
+	var role Role
 	if !ok {
-		username := r.FormValue("username")
+		username = r.FormValue("username")
 		roleInt, _ := strconv.Atoi(r.FormValue("role"))
-		role := (Role)(roleInt)
+		role = (Role)(roleInt)
 
 		usernameValidation := regexp.MustCompile(`^[A-zА-я .-]*$`)
 		usernameValid := usernameValidation.Match([]byte(username))
@@ -92,17 +93,19 @@ func (srv *Server) connectHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		//TODO: need check valid role
-
-		client = NewClient(username, role, webSocket, srv, ip)
 	} else {
-		client.webSocket.Close()
-		client.webSocket = webSocket
-	}
+		client = clientRaw.(*Client)
 
+		username = client.Name
+		role = client.Role
+	}
+	client = NewClient(username, role, webSocket, srv, ip)
+	client.Listen()
 	srv.addClient <- client
-	for _, srvclient := range srv.clients {
+	go srv.clients.Range(func(key, value any) bool {
+		srvclient := value.(*Client)
 		if client.Name == srvclient.Name {
-			continue
+			return true
 		}
 
 		clientMessage := &ConnectClientMessage{
@@ -112,16 +115,13 @@ func (srv *Server) connectHandler(w http.ResponseWriter, r *http.Request) {
 			srvclient.Online,
 		}
 
-		webSocket.WriteJSON(clientMessage)
-	}
+		client.Send(clientMessage)
+		return true
+	})
 
 	if !srv.voteStoped {
-		webSocket.WriteJSON(&voteStartedEvent{
-			"voteStart",
-		})
+		client.Send(&voteStartedMessage{"voteStart"})
 	}
-
-	client.Listen()
 
 }
 
@@ -139,20 +139,17 @@ func (srv *Server) Listen() {
 	for {
 		select {
 		case client := <-srv.addClient:
-			_, ok := srv.clients[client.IP]
-			if ok {
-				srv.clients[client.IP].Online = true
-			} else {
-				srv.clients[client.IP] = client
-			}
+			srv.clients.Store(client.IP, client)
 
 			log.Printf("user %s connected", client.Name)
 			srv.connectClient(client)
 
 		case client := <-srv.removeClient:
-			srv.clients[client.IP].Online = false
-			log.Printf("client %s removed", client.Name)
+			client.Online = false
+			srv.clients.Store(client.IP, client)
 			srv.disconnectClient(client)
+			close(client.done)
+			log.Printf("client %s disconnected", client.Name)
 		case data := <-srv.startVote:
 			if srv.voteStoped {
 				srv.start(data)
@@ -187,41 +184,52 @@ func (srv *Server) addNewVote(vote *OutputVote) {
 
 func (srv *Server) lenDevClients() int {
 	cnt := 0
-	for _, cl := range srv.clients {
-		if cl.Role != Observer && cl.Online == true {
+	srv.clients.Range(func(key, value any) bool {
+		client := value.(*Client)
+		if client.Role != Observer && client.Online == true {
 			cnt++
 		}
-	}
+		return true
+	})
 	return cnt
 }
 
 func (srv *Server) connectClient(newClient *Client) {
-	for _, client := range srv.clients {
-		client.clientConnect <- &ConnectClientMessage{
+	srv.clients.Range(func(key, value any) bool {
+		client := value.(*Client)
+		client.Send(&ConnectClientMessage{
 			"connect",
 			newClient.Name,
 			getRoleDescription(newClient.Role),
-			client.Online,
-		}
-	}
+			newClient.Online,
+		})
+		return true
+	})
 }
 
 func (srv *Server) disconnectClient(rmClient *Client) {
-	for _, client := range srv.clients {
-		client.clientDisconnect <- &DisconectClientMessage{
+	srv.clients.Range(func(key, value any) bool {
+		client := value.(*Client)
+		client.Send(&DisconectClientMessage{
 			"disconnect",
 			rmClient.Name,
-			client.IP,
-		}
-	}
+		})
+
+		return true
+	})
+
+	rmClient.webSocket.Close()
 }
 
 func (srv *Server) voteStarted() {
-	for _, client := range srv.clients {
-		client.voteStarted <- &voteStartedEvent{
+	srv.clients.Range(func(key, value any) bool {
+		client := value.(*Client)
+		client.Send(&voteStartedMessage{
 			"voteStart",
-		}
-	}
+		})
+
+		return true
+	})
 }
 
 func (srv *Server) calculateResult() {
@@ -244,23 +252,19 @@ func (srv *Server) calculateResult() {
 }
 
 func (srv *Server) sendVoteResultToAll() {
-	for _, client := range srv.clients {
-		client.send <- &VoteResultMessage{
+	srv.clients.Range(func(key, value any) bool {
+		client := value.(*Client)
+
+		client.Send(&VoteResultMessage{
 			srv.voteResult,
 			srv.currentTopicName,
 			srv.voteList,
-		}
-	}
+		})
+		return true
+	})
+
 	srv.voteStoped = true
 }
-
-// func (srv *Server) sendAll(res float64) {
-// 	for _, client := range srv.clients {
-// 		if client.name != msg.UserName {
-// 			client.send <- msg
-// 		}
-// 	}
-// }
 
 // checkUsernameHandler ajax request to verify the use of the given username
 func (srv *Server) checkUsernameHandler(rw http.ResponseWriter, req *http.Request) {
@@ -286,12 +290,15 @@ type whoamiResponse struct {
 
 func (srv *Server) whoamiHandler(rw http.ResponseWriter, req *http.Request) {
 	ip := strings.Split(req.RemoteAddr, ":")[0]
-	client, ok := srv.clients[ip]
+	clientAny, ok := srv.clients.Load(ip)
 
 	if !ok {
 		rw.WriteHeader(http.StatusNotFound)
 		return
 	}
+
+	client := clientAny.(*Client)
+
 	respRaw := &whoamiResponse{
 		Name: client.Name,
 		Role: client.Role,
@@ -312,23 +319,18 @@ func (srv *Server) whoamiHandler(rw http.ResponseWriter, req *http.Request) {
 
 // UserExist check user exist in server clients map
 func (srv *Server) userExist(username string) bool {
-	srv.rwMutex.RLock()
-	defer srv.rwMutex.RUnlock()
+	var exists bool
 
-	_, ok := srv.clients[username]
-	return ok
-}
+	srv.clients.Range(func(key, value any) bool {
+		client := value.(*Client)
+		if client.Name == username {
+			exists = true
+			return false
+		}
+		return true
+	})
 
-// GetClients return all clients in array
-func (srv *Server) GetClients() []User {
-	users := make([]User, 0, len(srv.clients))
-	for _, val := range srv.clients {
-		users = append(users, User{
-			val.Name,
-			getRoleDescription(val.Role),
-		})
-	}
-	return users
+	return exists
 }
 
 // GetTopicName returns current topic name

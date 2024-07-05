@@ -21,7 +21,7 @@ type User struct {
 	Role string
 }
 
-type voteStartedEvent struct {
+type voteStartedMessage struct {
 	Command string
 }
 
@@ -35,7 +35,6 @@ type ConnectClientMessage struct {
 type DisconectClientMessage struct {
 	Command  string
 	UserName string
-	Ip       string
 }
 
 type VoteResultMessage struct {

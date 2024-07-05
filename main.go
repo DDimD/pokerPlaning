@@ -19,9 +19,8 @@ func main() {
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		viewData := ViewData{
-			server.GetClients(),
-			prepareCards(),
-			server.GetTopicName(),
+			Cards: prepareCards(),
+			Topic: server.GetTopicName(),
 		}
 
 		tmpl, _ := template.ParseFiles("index/index.html")
@@ -43,7 +42,6 @@ type card struct {
 }
 
 type ViewData struct {
-	Users []pokerplan.User
 	Cards []card
 	Topic string
 }
