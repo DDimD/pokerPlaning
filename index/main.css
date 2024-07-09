@@ -128,3 +128,7 @@ body {
 .modal select:focus{
     background-color: #aaa;
 }
+
+.check {
+    margin-left: 5px;
+}

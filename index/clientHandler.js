@@ -70,12 +70,23 @@ function connect(username, role) {
         {
             voteStart();
         }
+
+        if(message.Command === 'votedUser') {
+            userVoted(message)
+        }
     }
+}
+
+function userVoted(message){
+    let elem = $('#user_' + message.UserName + ' .check');
+    elem.show()
 }
 
 function voteStart(){
     $("#startVote").hide();
     $("#cardBlock").show();
+    $(".check").hide();
+
     let tableRef = document.getElementById('userVotesList');
     for(let i = 0; i < tableRef.rows.length;){
         tableRef.deleteRow(i);
@@ -101,7 +112,7 @@ function addUser(user){
             <img class="avatar rounded-circle" src="48-512.png" alt="">\
             <span class="fa fa-circle circle ' + onlineCircleClass + '"></span>\
         </span>\
-        <span>'+user.UserName+'</span>\
+        <span>'+user.UserName+'</span><span class="fa fa-check check green" style="display: none;"></span>\
         <br>\
         <span class="user-subhead" class="role">'+user.Role+'</span>'
 

@@ -43,6 +43,11 @@ type VoteResultMessage struct {
 	Votes     map[string]*OutputVote `json:"votes"`
 }
 
+type VotedUser struct {
+	Command  string
+	UserName string
+}
+
 type Vote struct {
 	Value          float64 `json:"value"`
 	IsCoffeeBreak  bool    `json:"isCoffeeBreak"`

@@ -180,6 +180,15 @@ func (srv *Server) addNewVote(vote *OutputVote) {
 	if len(srv.voteList) >= srv.lenDevClients() {
 		srv.voteResultMessage <- true
 	}
+
+	srv.clients.Range(func(key, value any) bool {
+		client := value.(*Client)
+		client.Send(&VotedUser{
+			"votedUser",
+			vote.UserName,
+		})
+		return true
+	})
 }
 
 func (srv *Server) lenDevClients() int {
@@ -218,6 +227,7 @@ func (srv *Server) disconnectClient(rmClient *Client) {
 		return true
 	})
 
+	delete(srv.voteList, rmClient.Name)
 	rmClient.webSocket.Close()
 }
 
