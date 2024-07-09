@@ -27,6 +27,7 @@ type voteStartedMessage struct {
 
 type ConnectClientMessage struct {
 	Command  string
+	UserID   uint64
 	UserName string
 	Role     string
 	Online   bool
@@ -35,6 +36,7 @@ type ConnectClientMessage struct {
 type DisconectClientMessage struct {
 	Command  string
 	UserName string
+	UserID   uint64
 }
 
 type VoteResultMessage struct {
@@ -46,6 +48,7 @@ type VoteResultMessage struct {
 type VotedUser struct {
 	Command  string
 	UserName string
+	UserID   uint64
 }
 
 type Vote struct {
@@ -56,5 +59,6 @@ type Vote struct {
 
 type OutputVote struct {
 	UserName string `json:"userName"`
+	ID       uint64 `json:"id"`
 	Vote     Vote   `json:"vote"`
 }

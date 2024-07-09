@@ -17,6 +17,7 @@ const (
 
 // Client
 type Client struct {
+	ID        uint64
 	Name      string
 	Role      Role
 	IP        string
@@ -32,7 +33,7 @@ type Client struct {
 }
 
 // NewClient create new client
-func NewClient(clientName string, role Role, webSocket *websocket.Conn, server *Server, ip string) *Client {
+func NewClient(clientName string, role Role, webSocket *websocket.Conn, server *Server, ip string, clientId uint64) *Client {
 	if webSocket == nil {
 		panic("websocket should be not nil")
 	}
@@ -41,6 +42,7 @@ func NewClient(clientName string, role Role, webSocket *websocket.Conn, server *
 	}
 
 	return &Client{
+		clientId,
 		clientName,
 		role,
 		ip,
@@ -99,6 +101,7 @@ func (cl *Client) readCommand() {
 			var outVote OutputVote
 			outVote.UserName = cl.Name
 			outVote.Vote = vote
+			outVote.ID = cl.ID
 
 			cl.server.vote <- &outVote
 		}

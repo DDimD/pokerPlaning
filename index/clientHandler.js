@@ -78,7 +78,7 @@ function connect(username, role) {
 }
 
 function userVoted(message){
-    let elem = $('#user_' + snake_case_string(message.UserName) + ' .check');
+    let elem = $('#user_' + message.UserID + ' .check');
     elem.show()
 }
 
@@ -94,7 +94,7 @@ function voteStart(){
 }
 
 function addUser(user){
-    let elem = $('#user_' + snake_case_string(user.UserName) + ' .circle');
+    let elem = $('#user_' + user.UserID + ' .circle');
     if (elem.length) {
         elem.removeClass('darkred');
         elem.addClass('green');
@@ -118,13 +118,13 @@ function addUser(user){
 
 let tableRef = document.getElementById('userList');
 let newRow = tableRef.insertRow(-1);
-newRow.id = 'user_' + snake_case_string(user.UserName)
+newRow.id = 'user_' + user.UserID
 let UserCell = newRow.insertCell(0);
 UserCell.innerHTML = element
 }
 
 function removeUser(user){
-    var elem = $('#user_'+snake_case_string(user.UserName)+' .circle');
+    var elem = $('#user_'+user.UserID+' .circle');
     elem.removeClass('green');
     elem.addClass('darkred');
 }
@@ -205,10 +205,3 @@ $('.voteCard').on('click', function () {
 
     websock.send(JSON.stringify(output))
 })
-
-function snake_case_string(str) {
-    return str && str.match(
-        /[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
-        .map(s => s.toLowerCase())
-        .join('_');
-}

@@ -27,6 +27,7 @@ type Server struct {
 	voteResult        float64
 	currentTopicName  string
 	voteStoped        bool
+	lastClientId      uint64
 }
 
 // NewServer create server object
@@ -71,12 +72,17 @@ func (srv *Server) connectHandler(w http.ResponseWriter, r *http.Request) {
 
 	var username string
 	var role Role
+	var clientID uint64
+
 	if !ok {
+		clientID = srv.lastClientId
+		srv.lastClientId++
+
 		username = r.FormValue("username")
 		roleInt, _ := strconv.Atoi(r.FormValue("role"))
 		role = (Role)(roleInt)
 
-		usernameValidation := regexp.MustCompile(`^[A-zА-я -]*$`)
+		usernameValidation := regexp.MustCompile(`^[A-zА-я -._]*$`)
 		usernameValid := usernameValidation.Match([]byte(username))
 
 		//check valid value username parameter
@@ -95,11 +101,11 @@ func (srv *Server) connectHandler(w http.ResponseWriter, r *http.Request) {
 		//TODO: need check valid role
 	} else {
 		client = clientRaw.(*Client)
-
+		clientID = client.ID
 		username = client.Name
 		role = client.Role
 	}
-	client = NewClient(username, role, webSocket, srv, ip)
+	client = NewClient(username, role, webSocket, srv, ip, clientID)
 	client.Listen()
 	srv.addClient <- client
 	go srv.clients.Range(func(key, value any) bool {
@@ -109,10 +115,11 @@ func (srv *Server) connectHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		clientMessage := &ConnectClientMessage{
-			"connect",
-			srvclient.Name,
-			getRoleDescription(srvclient.Role),
-			srvclient.Online,
+			Command:  "connect",
+			UserID:   srvclient.ID,
+			UserName: srvclient.Name,
+			Role:     getRoleDescription(srvclient.Role),
+			Online:   srvclient.Online,
 		}
 
 		client.Send(clientMessage)
@@ -184,8 +191,9 @@ func (srv *Server) addNewVote(vote *OutputVote) {
 	srv.clients.Range(func(key, value any) bool {
 		client := value.(*Client)
 		client.Send(&VotedUser{
-			"votedUser",
-			vote.UserName,
+			Command:  "votedUser",
+			UserName: vote.UserName,
+			UserID:   vote.ID,
 		})
 		return true
 	})
@@ -195,7 +203,11 @@ func (srv *Server) lenDevClients() int {
 	cnt := 0
 	srv.clients.Range(func(key, value any) bool {
 		client := value.(*Client)
-		if client.Role != Observer && client.Online == true {
+		_, voted := srv.voteList[client.Name]
+		if client.Role != Observer &&
+			(client.Online == true ||
+				client.Online == false &&
+					voted) {
 			cnt++
 		}
 		return true
@@ -207,10 +219,11 @@ func (srv *Server) connectClient(newClient *Client) {
 	srv.clients.Range(func(key, value any) bool {
 		client := value.(*Client)
 		client.Send(&ConnectClientMessage{
-			"connect",
-			newClient.Name,
-			getRoleDescription(newClient.Role),
-			newClient.Online,
+			Command:  "connect",
+			UserID:   newClient.ID,
+			UserName: newClient.Name,
+			Role:     getRoleDescription(newClient.Role),
+			Online:   newClient.Online,
 		})
 		return true
 	})
@@ -220,14 +233,14 @@ func (srv *Server) disconnectClient(rmClient *Client) {
 	srv.clients.Range(func(key, value any) bool {
 		client := value.(*Client)
 		client.Send(&DisconectClientMessage{
-			"disconnect",
-			rmClient.Name,
+			Command:  "disconnect",
+			UserName: rmClient.Name,
+			UserID:   rmClient.ID,
 		})
 
 		return true
 	})
 
-	delete(srv.voteList, rmClient.Name)
 	rmClient.webSocket.Close()
 }
 
