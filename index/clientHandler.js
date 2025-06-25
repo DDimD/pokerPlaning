@@ -91,6 +91,8 @@ function voteStart(){
     for(let i = 0; i < tableRef.rows.length;){
         tableRef.deleteRow(i);
     }
+
+    $('#voteResultBlock').hide();
 }
 
 function addUser(user){

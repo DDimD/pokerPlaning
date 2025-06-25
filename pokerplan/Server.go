@@ -161,12 +161,10 @@ func (srv *Server) Listen() {
 			if srv.voteStoped {
 				srv.start(data)
 			}
-			//TODO: Добавить сообщение, что голосовалка уже началась
 		case vote := <-srv.vote:
 			if !srv.voteStoped {
 				srv.addNewVote(vote)
 			}
-			//TODO: Добавить сообщение, что голосование закончено
 		case tr := <-srv.voteResultMessage:
 			fmt.Println(tr)
 			srv.calculateResult()
